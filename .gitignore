@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+*.egg
+
+# Node
+node_modules/
+dist/
+.vite/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Environment
+.env
+.env.local
+
+# Data (large files, download separately)
+data/audio/real/
+data/audio/fake/
+data/video/real/
+data/video/fake/
+data/image/train/
+data/image/val/
+data/image/features/
+test_videos/
+
+# Logs
+*.log

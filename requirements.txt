@@ -1,0 +1,12 @@
+open-clip-torch
+mediapipe
+fastapi
+uvicorn[standard]
+torch
+torchvision
+datasets
+huggingface_hub
+scikit-learn
+pillow
+numpy
+tqdm

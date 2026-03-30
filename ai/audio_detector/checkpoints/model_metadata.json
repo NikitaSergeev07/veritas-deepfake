@@ -1,0 +1,34 @@
+{
+  "accuracy": 0.9817889662560257,
+  "precision": 0.9839055793991416,
+  "recall": 0.9797008547008547,
+  "f1_score": 0.9817987152034261,
+  "feature_names": [
+    "model1_fake_score",
+    "model2_fake_score",
+    "model3_fake_score",
+    "model4_fake_score",
+    "model5_fake_score"
+  ],
+  "n_features": 5,
+  "n_samples": 1867,
+  "n_real": "931",
+  "n_fake": "936",
+  "model_params": {
+    "C": 1.0,
+    "class_weight": null,
+    "dual": false,
+    "fit_intercept": true,
+    "intercept_scaling": 1,
+    "l1_ratio": null,
+    "max_iter": 1000,
+    "multi_class": "deprecated",
+    "n_jobs": null,
+    "penalty": "l2",
+    "random_state": 42,
+    "solver": "lbfgs",
+    "tol": 0.0001,
+    "verbose": 0,
+    "warm_start": false
+  }
+}
