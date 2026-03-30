@@ -49,8 +49,6 @@ img, svg { display: block; max-width: 100%; }
 
 .file-input { display: none; }
 
-/* ── Page ──────────────────────────────────────────────────────────────────── */
-
 .page {
   min-height: 100vh;
   display: flex;
@@ -61,7 +59,6 @@ img, svg { display: block; max-width: 100%; }
     #0a0f1c;
 }
 
-/* subtle grid overlay */
 .page::before {
   content: "";
   position: fixed;
@@ -73,8 +70,6 @@ img, svg { display: block; max-width: 100%; }
   pointer-events: none;
   z-index: 0;
 }
-
-/* ── Topbar ────────────────────────────────────────────────────────────────── */
 
 .topbar {
   position: relative;
@@ -133,8 +128,6 @@ img, svg { display: block; max-width: 100%; }
   background: rgba(90,168,255,0.2);
 }
 
-/* ── Main centered ─────────────────────────────────────────────────────────── */
-
 .main {
   flex: 1;
   display: flex;
@@ -153,8 +146,6 @@ img, svg { display: block; max-width: 100%; }
   align-items: center;
   gap: 0;
 }
-
-/* ── Brand block ───────────────────────────────────────────────────────────── */
 
 .vt-brand {
   display: flex;
@@ -190,8 +181,6 @@ img, svg { display: block; max-width: 100%; }
   margin-bottom: 36px;
   max-width: 500px;
 }
-
-/* ── Tabs (VirusTotal style) ───────────────────────────────────────────────── */
 
 .vt-tabs {
   position: relative;
@@ -238,10 +227,8 @@ img, svg { display: block; max-width: 100%; }
 }
 
 .vt-tab-line {
-  display: none; /* the border-bottom on .vt-tabs handles the line */
+  display: none;
 }
-
-/* ── Upload panel ──────────────────────────────────────────────────────────── */
 
 .vt-panel {
   width: 100%;
@@ -253,8 +240,6 @@ img, svg { display: block; max-width: 100%; }
   backdrop-filter: blur(12px);
   margin-bottom: 16px;
 }
-
-/* ── Dropzone ──────────────────────────────────────────────────────────────── */
 
 .vt-drop {
   display: flex;
@@ -300,8 +285,6 @@ img, svg { display: block; max-width: 100%; }
   font-size: 0.78rem;
 }
 
-/* ── Selected file row ─────────────────────────────────────────────────────── */
-
 .vt-file-row {
   display: flex;
   align-items: center;
@@ -337,8 +320,6 @@ img, svg { display: block; max-width: 100%; }
 
 .vt-clear-btn:hover { color: var(--danger); }
 
-/* ── Analyze button ────────────────────────────────────────────────────────── */
-
 .vt-actions {
   display: flex;
   justify-content: flex-end;
@@ -369,8 +350,6 @@ img, svg { display: block; max-width: 100%; }
   cursor: not-allowed;
   transform: none;
 }
-
-/* ── Status / errors ───────────────────────────────────────────────────────── */
 
 .vt-error {
   margin-top: 12px;
@@ -420,8 +399,6 @@ img, svg { display: block; max-width: 100%; }
   text-align: right;
 }
 
-/* ── Loading spinner ───────────────────────────────────────────────────────── */
-
 .spinner {
   width: 14px;
   height: 14px;
@@ -433,8 +410,6 @@ img, svg { display: block; max-width: 100%; }
 }
 
 @keyframes spin { to { transform: rotate(360deg); } }
-
-/* ── Results ───────────────────────────────────────────────────────────────── */
 
 .container { width: min(1100px, 92vw); margin: 0 auto; }
 
@@ -492,8 +467,6 @@ img, svg { display: block; max-width: 100%; }
   margin-bottom: 12px;
 }
 
-/* ── Prob bar ──────────────────────────────────────────────────────────────── */
-
 .prob-bar-track {
   height: 6px;
   border-radius: 999px;
@@ -513,8 +486,6 @@ img, svg { display: block; max-width: 100%; }
   border-radius: 999px;
   transition: width 0.5s ease;
 }
-
-/* ── Meta grid ─────────────────────────────────────────────────────────────── */
 
 .res-meta-grid {
   display: grid;
@@ -545,8 +516,6 @@ img, svg { display: block; max-width: 100%; }
   color: var(--muted);
 }
 
-/* ── View breakdown (image per-crop) ───────────────────────────────────────── */
-
 .view-breakdown {
   border-top: 1px solid rgba(90,168,255,0.1);
   margin-top: 16px;
@@ -575,8 +544,6 @@ img, svg { display: block; max-width: 100%; }
   flex-shrink: 0;
 }
 
-/* ── Audio card ────────────────────────────────────────────────────────────── */
-
 .audio-card {
   display: flex;
   flex-direction: column;
@@ -597,8 +564,6 @@ img, svg { display: block; max-width: 100%; }
   color: var(--muted);
   margin-bottom: 8px;
 }
-
-/* ── Base model scores ─────────────────────────────────────────────────────── */
 
 .base-scores {
   display: grid;
@@ -627,14 +592,10 @@ img, svg { display: block; max-width: 100%; }
   white-space: nowrap;
 }
 
-/* ── Tones ─────────────────────────────────────────────────────────────────── */
-
 .tone-success  { color: var(--success); }
 .tone-danger   { color: var(--danger); }
 .tone-muted    { color: var(--muted); }
 .tone-warning  { color: #fbbf24; }
-
-/* ── Preview ───────────────────────────────────────────────────────────────── */
 
 .preview-frame {
   width: 100%;
@@ -657,8 +618,6 @@ img, svg { display: block; max-width: 100%; }
   color: var(--muted);
   font-size: 0.88rem;
 }
-
-/* ── Video timeline ────────────────────────────────────────────────────────── */
 
 .seg-timeline {
   display: flex;
@@ -686,7 +645,6 @@ img, svg { display: block; max-width: 100%; }
 .seg-real      { background: var(--success); }
 .seg-uncertain { background: #fbbf24; }
 
-/* Custom tooltip */
 .seg-tooltip {
   display: none;
   position: absolute;
@@ -742,8 +700,6 @@ img, svg { display: block; max-width: 100%; }
   font-size: 0.75rem;
 }
 
-/* ── Footer ────────────────────────────────────────────────────────────────── */
-
 .footer {
   position: relative;
   z-index: 1;
@@ -754,8 +710,6 @@ img, svg { display: block; max-width: 100%; }
   text-align: center;
 }
 
-/* ── Utility ───────────────────────────────────────────────────────────────── */
-
 .mono {
   font-family: "IBM Plex Mono", monospace;
   font-size: 0.85em;
@@ -765,8 +719,6 @@ img, svg { display: block; max-width: 100%; }
   from { opacity: 0; transform: translateY(12px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-
-/* ── Responsive ────────────────────────────────────────────────────────────── */
 
 @media (max-width: 720px) {
   .topbar { padding: 14px 16px; }

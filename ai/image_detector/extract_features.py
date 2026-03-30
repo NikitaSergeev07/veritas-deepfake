@@ -1,17 +1,3 @@
-"""
-Pre-extract CLIP ViT-B/16 features from all training images and save to disk.
-
-This is the key speed optimization: instead of running CLIP every epoch,
-we extract features ONCE and train the MLP head on cached tensors.
-
-Each image is augmented 2x (train set) for data variety.
-Val images use clean transforms (no augmentation).
-
-Usage:
-  python -m ai.image_detector.extract_features
-  python -m ai.image_detector.extract_features --data-dir data/train --aug-copies 2
-"""
-
 import argparse
 import os
 import random
@@ -26,7 +12,7 @@ from tqdm import tqdm
 try:
     from .dataset import DeepfakeImageDataset, get_train_transform, get_val_transform
 except ImportError:
-    from dataset import DeepfakeImageDataset, get_train_transform, get_val_transform  # type: ignore[no-redef]
+    from dataset import DeepfakeImageDataset, get_train_transform, get_val_transform
 
 os.environ.setdefault("PYTORCH_ENABLE_MPS_FALLBACK", "1")
 
@@ -40,7 +26,7 @@ def get_device():
 def load_clip(device):
     print("Loading CLIP ViT-B/16 ...")
     model, _, _ = open_clip.create_model_and_transforms("ViT-B-16", pretrained="openai")
-    model = model.visual  # vision encoder only
+    model = model.visual
     model.eval()
     model.requires_grad_(False)
     model = model.to(device)
@@ -53,7 +39,7 @@ def extract(clip_model, loader, device) -> tuple[torch.Tensor, torch.Tensor]:
     all_feats, all_labels = [], []
     for imgs, labels in loader:
         imgs = imgs.to(device)
-        feats = clip_model(imgs)  # (B, 512)
+        feats = clip_model(imgs)
         all_feats.append(feats.cpu())
         all_labels.append(labels)
     return torch.cat(all_feats), torch.cat(all_labels)
@@ -64,8 +50,7 @@ def main():
     parser.add_argument("--data-dir",   default="data/image/train")
     parser.add_argument("--feat-dir",   default="data/image/features")
     parser.add_argument("--val-frac",   type=float, default=0.15)
-    parser.add_argument("--aug-copies", type=int,   default=2,
-                        help="Augmented copies per train image (default 2)")
+    parser.add_argument("--aug-copies", type=int,   default=2)
     parser.add_argument("--batch-size", type=int,   default=8)
     parser.add_argument("--seed",       type=int,   default=42)
     args = parser.parse_args()
@@ -79,7 +64,6 @@ def main():
     feat_dir.mkdir(parents=True, exist_ok=True)
     print(f"Device: {device}")
 
-    # ── Split indices ──────────────────────────────────────────────────────────
     full_ds = DeepfakeImageDataset(args.data_dir, transform=None)
     n       = len(full_ds)
     indices = list(range(n))
@@ -91,7 +75,6 @@ def main():
 
     clip_model = load_clip(device)
 
-    # ── Extract validation features (clean, 1x) ────────────────────────────────
     print(f"\nExtracting val features ({val_n} images) ...")
     val_transform = get_val_transform()
     val_files  = [full_ds.files[i]  for i in val_idx]
@@ -116,7 +99,6 @@ def main():
     torch.save(val_lbls,  feat_dir / "val_labels.pt")
     print(f"  Saved val: {val_feats.shape}")
 
-    # ── Extract train features (augmented, aug_copies x) ──────────────────────
     trn_files  = [full_ds.files[i]  for i in trn_idx]
     trn_labels = [full_ds.labels[i] for i in trn_idx]
 
@@ -137,7 +119,6 @@ def main():
     torch.save(train_lbls,  feat_dir / "train_labels.pt")
     print(f"  Saved train: {train_feats.shape}  (real={int((train_lbls==0).sum())}, fake={int((train_lbls==1).sum())})")
 
-    # Free CLIP from memory
     del clip_model
     if device.type == "mps":
         torch.mps.empty_cache()

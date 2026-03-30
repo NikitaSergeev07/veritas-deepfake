@@ -1,18 +1,3 @@
-"""
-Audio deepfake detection: 5 wav2vec2 base models → stacking LogisticRegression.
-
-Architecture:
-  audio file
-    → [5 HuggingFace audio-classification pipelines]
-    → [5 fake probability scores]
-    → StandardScaler
-    → LogisticRegression (meta-learner, 98.2% accuracy)
-    → verdict + confidence
-
-Run from project root:
-  python -m ai.audio_detector.inference <audio_path>
-"""
-
 from __future__ import annotations
 
 import json
@@ -40,7 +25,6 @@ SUPPORTED_EXTENSIONS = {".wav", ".mp3", ".flac", ".ogg", ".m4a"}
 
 
 def _resolve_device() -> int:
-    """Returns HuggingFace pipeline device index: 0=CUDA, -1=CPU. MPS not supported by pipelines."""
     try:
         import torch
         if torch.cuda.is_available():
@@ -51,15 +35,6 @@ def _resolve_device() -> int:
 
 
 def _extract_fake_probability(result: list[dict]) -> float:
-    """
-    Normalise model output to a single fake probability [0, 1].
-
-    Matches the exact logic used when training the stacking model:
-      - default: take pred[0]['score'] (top prediction's confidence)
-      - if any label contains 'real': flip it (1 - score)
-    This means 'spoof'/'bonafide' models are handled by the default branch,
-    consistent with the training feature extraction.
-    """
     if not result:
         return 0.5
     score = float(result[0]["score"])
@@ -71,7 +46,6 @@ def _extract_fake_probability(result: list[dict]) -> float:
 
 
 def load_stacking_model():
-    """Load the LogisticRegression meta-learner + scaler from checkpoints."""
     import joblib
     model   = joblib.load(CHECKPOINTS_DIR / "logistic_regression_model.joblib")
     scaler  = joblib.load(CHECKPOINTS_DIR / "scaler.joblib")
@@ -82,7 +56,6 @@ def load_stacking_model():
 
 
 def load_base_models(device: int = -1) -> list[tuple[str, Any]]:
-    """Load all 5 HuggingFace audio-classification pipelines."""
     from transformers import pipeline as hf_pipeline
 
     loaded = []
@@ -100,17 +73,6 @@ def predict_audio(
     stacking_model,
     scaler,
 ) -> dict[str, Any]:
-    """
-    Run full pipeline on a single audio file.
-
-    Returns:
-        label            – "fake" or "real"
-        confidence       – probability of predicted class
-        fake_probability – P(fake)
-        real_probability – P(real)
-        base_scores      – {model_name: fake_score, ...}
-        summary          – human-readable string
-    """
     audio_path = str(audio_path)
     base_scores: dict[str, float] = {}
 
@@ -129,14 +91,9 @@ def predict_audio(
 
     probabilities = stacking_model.predict_proba(scores_scaled)[0]
 
-    # class 0 = real, class 1 = fake (y = (true_label == 'fake').astype(int))
     fake_probability = float(probabilities[1])
     real_probability = float(probabilities[0])
 
-    # Calibrated thresholds to reduce false positives on noisy/phone recordings:
-    #   fake_probability >= 0.70  → FAKE   (high confidence required)
-    #   fake_probability <= 0.35  → REAL
-    #   in between                → UNCERTAIN
     FAKE_THRESHOLD = 0.70
     REAL_THRESHOLD = 0.35
 

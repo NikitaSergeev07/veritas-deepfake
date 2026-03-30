@@ -23,7 +23,7 @@ SUPPORTED_CONTENT_TYPES = {
     "audio/x-flac",
     "audio/mp4",
     "audio/m4a",
-    "video/mp4",          # some m4a files come as video/mp4
+    "video/mp4",
     "application/octet-stream",
 }
 
@@ -98,7 +98,6 @@ class AudioDetectorService:
 
         wav_path: str | None = None
         try:
-            # wav2vec2 pipelines cannot read M4A/MP4/OGG — convert to WAV via ffmpeg
             if suffix in {".m4a", ".mp4", ".ogg"}:
                 import subprocess
                 wav_tmp = tempfile.NamedTemporaryFile(suffix=".wav", delete=False)

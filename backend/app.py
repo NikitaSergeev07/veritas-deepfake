@@ -44,7 +44,6 @@ ALLOWED_EXTENSIONS = {
 DETECTOR        = DeepfakeDetectorService()
 AUDIO_DETECTOR  = AudioDetectorService()
 VIDEO_DETECTOR  = VideoDetectorService()
-# Thread pools for blocking ML inference (model loading + inference)
 _AUDIO_EXECUTOR = ThreadPoolExecutor(max_workers=2, thread_name_prefix="audio_infer")
 _IMAGE_EXECUTOR = ThreadPoolExecutor(max_workers=2, thread_name_prefix="image_infer")
 _VIDEO_EXECUTOR = ThreadPoolExecutor(max_workers=1, thread_name_prefix="video_infer")
@@ -127,8 +126,6 @@ class PredictResponse(BaseModel):
     uploaded_at: str
 
 
-# ── Audio response models ────────────────────────────────────────────────────
-
 class AudioHealthResponse(BaseModel):
     status: str
     service: str
@@ -158,8 +155,6 @@ class AudioPredictResponse(BaseModel):
     size_mb: float
     uploaded_at: str
 
-
-# ── Video response models ────────────────────────────────────────────────────
 
 class VideoSegment(BaseModel):
     start: float
@@ -197,8 +192,6 @@ class VideoPredictResponse(BaseModel):
     size_mb: float
     uploaded_at: str
 
-
-# ────────────────────────────────────────────────────────────────────────────
 
 app = FastAPI(title=SERVICE_NAME, version="0.3.0")
 
@@ -377,8 +370,6 @@ async def predict(file: UploadFile = File(...)) -> PredictResponse:
     )
 
 
-# ── Audio endpoints ──────────────────────────────────────────────────────────
-
 MAX_AUDIO_MB    = int(os.environ.get("AUDIO_MAX_UPLOAD_MB", "50"))
 MAX_AUDIO_BYTES = MAX_AUDIO_MB * 1024 * 1024
 
@@ -451,8 +442,6 @@ async def predict_audio(file: UploadFile = File(...)) -> AudioPredictResponse:
         uploaded_at=uploaded_at,
     )
 
-
-# ── Video endpoints ─────────────────────────────────────────────────────────
 
 MAX_VIDEO_MB    = int(os.environ.get("VIDEO_MAX_UPLOAD_MB", "100"))
 MAX_VIDEO_BYTES = MAX_VIDEO_MB * 1024 * 1024

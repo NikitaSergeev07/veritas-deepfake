@@ -11,7 +11,7 @@ from PIL import Image, ImageOps
 
 LOGGER = logging.getLogger("deepfake.runtime")
 
-PROJECT_ROOT = Path(__file__).parent.parent  # deepfake_detector/
+PROJECT_ROOT = Path(__file__).parent.parent
 CHECKPOINT_PATH = PROJECT_ROOT / "ai" / "image_detector" / "checkpoints" / "best_model.pth"
 
 MODEL_ID = "CLIP-ViT-B16-MLP"

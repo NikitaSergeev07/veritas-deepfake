@@ -1,10 +1,3 @@
-"""
-Evaluate model on a test set.
-
-Usage:
-  python -m ai.image_detector.evaluate --data-dir data/test
-"""
-
 import argparse
 import os
 
@@ -30,8 +23,8 @@ def main():
         from .inference import get_device, load_model
         from .dataset import DeepfakeImageDataset, get_val_transform
     except ImportError:
-        from inference import get_device, load_model  # type: ignore[no-redef]
-        from dataset import DeepfakeImageDataset, get_val_transform  # type: ignore[no-redef]
+        from inference import get_device, load_model
+        from dataset import DeepfakeImageDataset, get_val_transform
 
     device = get_device()
     clip_visual, mlp, threshold = load_model(args.checkpoint, device)

@@ -4,8 +4,6 @@ import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 type Lang = "ru" | "en";
 type Tab  = "image" | "audio" | "video";
 
-// ── Image types ──────────────────────────────────────────────────────────────
-
 type ViewScore = {
   name: string;
   fake_probability: number;
@@ -65,8 +63,6 @@ type ImageHealthStatus = {
   load_errors: Record<string, string>;
 };
 
-// ── Audio types ──────────────────────────────────────────────────────────────
-
 type AudioPredictResult = {
   status: string;
   filename: string;
@@ -95,8 +91,6 @@ type AudioHealthStatus = {
   supported_extensions: string[];
   load_errors: Record<string, string>;
 };
-
-// ── Video types ─────────────────────────────────────────────────────────────
 
 type VideoSegment = {
   start: number;
@@ -133,8 +127,6 @@ type VideoHealthStatus = {
   supported_extensions: string[];
   load_errors: Record<string, string>;
 };
-
-// ── i18n ─────────────────────────────────────────────────────────────────────
 
 const messages = {
   en: {
@@ -250,8 +242,6 @@ const ALLOWED_IMAGE_EXT   = [".jpg",".jpeg",".png",".webp",".bmp",".tif",".tiff"
 const ALLOWED_AUDIO_EXT   = [".wav",".mp3",".flac",".ogg",".m4a"];
 const ALLOWED_VIDEO_EXT   = [".mp4",".mov",".avi",".mkv",".webm"];
 
-// ── State ────────────────────────────────────────────────────────────────────
-
 const lang       = ref<Lang>("ru");
 const activeTab  = ref<Tab>("image");
 
@@ -279,8 +269,6 @@ const vidError      = ref("");
 const vidResult     = ref<VideoPredictResult | null>(null);
 const vidDragActive = ref(false);
 const vidHealth     = ref<VideoHealthStatus | null>(null);
-
-// ── Computed ─────────────────────────────────────────────────────────────────
 
 const ui = computed(() => messages[lang.value]);
 const imgMaxMb = computed(() => imgHealth.value?.max_upload_mb ?? 10);
@@ -388,8 +376,6 @@ const imgStatusOk = computed(() => imgHealth.value !== null);
 const audStatusOk = computed(() => audHealth.value !== null);
 const vidStatusOk = computed(() => vidHealth.value !== null);
 
-// ── Lifecycle ────────────────────────────────────────────────────────────────
-
 let _healthTimer: ReturnType<typeof setInterval> | null = null;
 
 onMounted(() => {
@@ -411,8 +397,6 @@ watch(imgFile, (f) => {
   if (imgPreviewUrl.value) URL.revokeObjectURL(imgPreviewUrl.value);
   imgPreviewUrl.value = f ? URL.createObjectURL(f) : "";
 });
-
-// ── Handlers ─────────────────────────────────────────────────────────────────
 
 const mapError = (message: string) => {
   const l = message.toLowerCase();
@@ -557,7 +541,6 @@ const setLanguage = (v: Lang) => { lang.value = v; };
 <template>
   <div class="page">
 
-    <!-- ── Topbar ──────────────────────────────────────────────────────────── -->
     <header class="topbar">
       <div class="brand">
         <div class="brand-mark">
@@ -574,11 +557,9 @@ const setLanguage = (v: Lang) => { lang.value = v; };
       </div>
     </header>
 
-    <!-- ── Hero upload ─────────────────────────────────────────────────────── -->
     <main class="main">
       <div class="vt-center">
 
-        <!-- Logo + subtitle -->
         <div class="vt-brand">
           <div class="vt-logo-mark">
             <svg width="36" height="36" viewBox="0 0 24 24" fill="none">
@@ -590,7 +571,6 @@ const setLanguage = (v: Lang) => { lang.value = v; };
         </div>
         <p class="vt-subtitle">{{ ui.subtitle }}</p>
 
-        <!-- Tab switcher -->
         <nav class="vt-tabs">
           <button class="vt-tab" :class="{ active: activeTab === 'image' }" @click="activeTab = 'image'">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -614,10 +594,8 @@ const setLanguage = (v: Lang) => { lang.value = v; };
           <div class="vt-tab-line"></div>
         </nav>
 
-        <!-- Upload panel -->
         <div class="vt-panel">
 
-          <!-- ── Image tab ── -->
           <template v-if="activeTab === 'image'">
             <div class="vt-drop" :class="{ dragging: imgDragActive }"
               @click="imgFileInput?.click()" @drop="onImgDrop" @dragover="onImgDragOver" @dragleave="onImgDragLeave">
@@ -654,7 +632,6 @@ const setLanguage = (v: Lang) => { lang.value = v; };
             <div v-if="imgError" class="vt-error">{{ imgError }}</div>
           </template>
 
-          <!-- ── Audio tab ── -->
           <template v-if="activeTab === 'audio'">
             <div class="vt-drop" :class="{ dragging: audDragActive }"
               @click="audFileInput?.click()" @drop="onAudDrop" @dragover="onAudDragOver" @dragleave="onAudDragLeave">
@@ -693,7 +670,6 @@ const setLanguage = (v: Lang) => { lang.value = v; };
             <div v-if="audError" class="vt-error">{{ audError }}</div>
           </template>
 
-          <!-- ── Video tab ── -->
           <template v-if="activeTab === 'video'">
             <div class="vt-drop" :class="{ dragging: vidDragActive }"
               @click="vidFileInput?.click()" @drop="onVidDrop" @dragover="onVidDragOver" @dragleave="onVidDragLeave">
@@ -734,7 +710,6 @@ const setLanguage = (v: Lang) => { lang.value = v; };
 
         </div>
 
-        <!-- Status + note -->
         <div class="vt-footer-row">
           <div class="vt-status">
             <span class="status-dot"
@@ -752,7 +727,6 @@ const setLanguage = (v: Lang) => { lang.value = v; };
       </div>
     </main>
 
-    <!-- ── Image result ────────────────────────────────────────────────────── -->
     <section v-if="imgResult && activeTab === 'image'" class="results container">
       <div class="res-verdict" :class="imgResultTone">
         <div class="res-label">{{ imgResultLabel }}</div>
@@ -760,7 +734,6 @@ const setLanguage = (v: Lang) => { lang.value = v; };
       </div>
 
       <div class="res-grid">
-        <!-- Preview -->
         <div class="res-card">
           <div class="preview-frame">
             <img v-if="imgPreviewUrl" :src="imgPreviewUrl" :alt="imgResult.filename" class="preview-img"/>
@@ -768,7 +741,6 @@ const setLanguage = (v: Lang) => { lang.value = v; };
           </div>
         </div>
 
-        <!-- Probabilities -->
         <div class="res-card">
           <div class="res-section-title">{{ ui.probabilityFake }}</div>
           <div class="big-prob" :class="imgResultTone">{{ Math.round(imgResult.fake_probability * 100) }}%</div>
@@ -805,7 +777,6 @@ const setLanguage = (v: Lang) => { lang.value = v; };
             </div>
           </div>
 
-          <!-- Per-view breakdown -->
           <div v-for="model in imgResult.models" :key="model.model_id" class="view-breakdown">
             <div v-for="view in model.views" :key="view.name" class="view-row">
               <span class="view-name">{{ view.name }}</span>
@@ -823,7 +794,6 @@ const setLanguage = (v: Lang) => { lang.value = v; };
       </div>
     </section>
 
-    <!-- ── Audio result ────────────────────────────────────────────────────── -->
     <section v-if="audResult && activeTab === 'audio'" class="results container">
       <div class="res-verdict" :class="audResultTone">
         <div class="res-label">{{ audResultLabel }}</div>
@@ -831,7 +801,6 @@ const setLanguage = (v: Lang) => { lang.value = v; };
       </div>
 
       <div class="res-grid">
-        <!-- Audio icon card -->
         <div class="res-card audio-card">
           <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="var(--accent-2)" stroke-width="1.4">
             <path d="M9 18V5l12-2v13" stroke-linecap="round" stroke-linejoin="round"/>
@@ -857,7 +826,6 @@ const setLanguage = (v: Lang) => { lang.value = v; };
           </div>
         </div>
 
-        <!-- Base model scores -->
         <div class="res-card">
           <div class="res-section-title">{{ ui.baseScores }}</div>
           <div class="base-scores">
@@ -875,7 +843,6 @@ const setLanguage = (v: Lang) => { lang.value = v; };
       </div>
     </section>
 
-    <!-- ── Video result ───────────────────────────────────────────────────── -->
     <section v-if="vidResult && activeTab === 'video'" class="results container">
       <div class="res-verdict" :class="vidResultTone">
         <div class="res-label">{{ vidResultLabel }}</div>
@@ -883,7 +850,6 @@ const setLanguage = (v: Lang) => { lang.value = v; };
       </div>
 
       <div class="res-grid">
-        <!-- Video info card -->
         <div class="res-card audio-card">
           <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="var(--accent-2)" stroke-width="1.4">
             <rect x="2" y="4" width="20" height="14" rx="2"/>
@@ -917,11 +883,9 @@ const setLanguage = (v: Lang) => { lang.value = v; };
           </div>
         </div>
 
-        <!-- Segments card -->
         <div class="res-card">
           <div class="res-section-title">{{ ui.segments }}</div>
 
-          <!-- Timeline bar -->
           <div v-if="vidResult.segments.length" class="seg-timeline">
             <div v-for="(seg, i) in vidResult.segments" :key="i"
               class="seg-block"
@@ -942,7 +906,6 @@ const setLanguage = (v: Lang) => { lang.value = v; };
             </div>
           </div>
 
-          <!-- Segment details -->
           <div v-if="vidResult.segments.length" class="base-scores">
             <div v-for="(seg, i) in vidResult.segments" :key="i" class="base-row">
               <span class="base-name mono">

@@ -1,22 +1,3 @@
-"""
-Video deepfake detection: VideoMAE temporal transformer.
-
-Architecture:
-  video file
-    → ffmpeg (extract frames at 2 fps)
-    → MediaPipe face detection + crop (fallback: center crop)
-    → VideoMAE (16 frames × 224×224 → temporal attention)
-    → verdict + confidence
-    → optional: per-segment breakdown for longer videos
-
-Model: Vansh180/VideoMae-ffc23-deepfake-detector
-  - VideoMAE-Base fine-tuned on FaceForensics++ C23
-  - 86M params, labels: {0: "real", 1: "fake"}
-
-Run from project root:
-  python -m ai.video_detector.inference <video_path>
-"""
-
 from __future__ import annotations
 
 import logging
@@ -51,9 +32,6 @@ def _resolve_device() -> str:
     return "cpu"
 
 
-# ── Frame extraction ────────────────────────────────────────────────────────
-
-
 def get_video_duration(video_path: str) -> float:
     cmd = [
         "ffprobe", "-v", "error",
@@ -80,11 +58,7 @@ def extract_frames(video_path: str, fps: int = EXTRACT_FPS) -> list[Image.Image]
     return frames
 
 
-# ── Face detection ──────────────────────────────────────────────────────────
-
-
 def _crop_face(image: Image.Image, expand: float = 1.4) -> Image.Image:
-    """Detect face with MediaPipe and return expanded crop; fallback to center crop."""
     try:
         import mediapipe as mp
         arr = np.array(image)
@@ -118,10 +92,8 @@ def _center_crop(image: Image.Image) -> Image.Image:
 
 
 def crop_faces(frames: list[Image.Image]) -> list[Image.Image]:
-    """Detect face in first frame, apply same-ish crop to all (for temporal consistency)."""
     if not frames:
         return frames
-    # Detect face region on a few sampled frames
     ref_frame = frames[len(frames) // 2]
     try:
         import mediapipe as mp
@@ -136,7 +108,6 @@ def crop_faces(frames: list[Image.Image]) -> list[Image.Image]:
                 cx_rel = bb.xmin + bb.width / 2
                 cy_rel = bb.ymin + bb.height / 2
                 size_rel = max(bb.width, bb.height) * 1.4
-                # Apply same relative crop to all frames
                 cropped = []
                 for frame in frames:
                     fw, fh = frame.size
@@ -155,9 +126,6 @@ def crop_faces(frames: list[Image.Image]) -> list[Image.Image]:
     return [_center_crop(f) for f in frames]
 
 
-# ── Model loading ───────────────────────────────────────────────────────────
-
-
 def load_model(device: str = "cpu"):
     from transformers import VideoMAEForVideoClassification, VideoMAEImageProcessor
 
@@ -169,9 +137,6 @@ def load_model(device: str = "cpu"):
         model.to(device)
     LOGGER.info("VideoMAE loaded on %s", device)
     return model, processor
-
-
-# ── Inference ───────────────────────────────────────────────────────────────
 
 
 def _sample(frames: list[Image.Image], n: int = NUM_FRAMES) -> list[Image.Image]:
@@ -190,7 +155,6 @@ def _classify(
     processor,
     device: str = "cpu",
 ) -> float:
-    """Returns fake_probability for a set of frames."""
     import torch
 
     sampled = _sample(frames, NUM_FRAMES)
@@ -202,7 +166,7 @@ def _classify(
         logits = model(**inputs).logits
         probs = torch.softmax(logits, dim=-1)[0]
 
-    return float(probs[1])  # index 1 = fake
+    return float(probs[1])
 
 
 def predict_video(
@@ -211,12 +175,6 @@ def predict_video(
     processor,
     device: str = "cpu",
 ) -> dict[str, Any]:
-    """
-    Full video deepfake detection pipeline.
-
-    Returns dict with: label, confidence, fake_probability, real_probability,
-    duration, frames_analyzed, segments, summary.
-    """
     video_path = str(video_path)
     duration = get_video_duration(video_path)
 
@@ -235,12 +193,10 @@ def predict_video(
             "summary": "Could not extract frames from video.",
         }
 
-    # Face crop for better accuracy
     frames = crop_faces(raw_frames)
     total_frames = len(frames)
     LOGGER.info("Extracted %d frames, running VideoMAE ...", total_frames)
 
-    # Overall prediction
     fake_prob = _classify(frames, model, processor, device)
     real_prob = 1.0 - fake_prob
 
@@ -254,7 +210,6 @@ def predict_video(
         label = "uncertain"
         confidence = max(fake_prob, real_prob)
 
-    # Per-segment analysis
     segments: list[dict[str, Any]] = []
     if total_frames >= NUM_FRAMES * 2:
         n_segments = min(total_frames // NUM_FRAMES, 6)
@@ -300,8 +255,6 @@ def predict_video(
         "summary": summary,
     }
 
-
-# ── CLI ─────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
     import sys

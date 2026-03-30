@@ -1,13 +1,3 @@
-"""
-Download video deepfake test clips from HuggingFace.
-
-Source: faridlab/deepaction_v1  (real Pexels videos vs AI-generated, open access)
-
-Usage:
-  python -m ai.video_detector.download_data
-  python -m ai.video_detector.download_data --max-per-class 30
-"""
-
 import argparse
 import hashlib
 import io
@@ -17,8 +7,7 @@ from pathlib import Path
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--data-dir", default="data/video")
-    parser.add_argument("--max-per-class", type=int, default=20,
-                        help="Max videos per class (default 20)")
+    parser.add_argument("--max-per-class", type=int, default=20)
     args = parser.parse_args()
 
     real_dir = Path(args.data_dir) / "real"
@@ -32,7 +21,6 @@ def main():
     from datasets import load_dataset
     from tqdm import tqdm
 
-    # deepaction_v1: real (Pexels) vs AI-generated video clips
     print("\nLoading faridlab/deepaction_v1 ...")
     try:
         ds = load_dataset(
@@ -57,11 +45,9 @@ def main():
     n_real = n_fake = 0
     max_per = args.max_per_class
 
-    # Inspect columns
     print(f"  Columns: {ds.column_names}")
     print(f"  Size: {len(ds)} samples")
 
-    # Determine which column has the video and label
     video_col = None
     label_col = None
     for c in ds.column_names:
@@ -77,13 +63,11 @@ def main():
 
     print(f"  Using video_col={video_col}, label_col={label_col}")
 
-    # Check label values
     sample_labels = set()
     for i in range(min(50, len(ds))):
         sample_labels.add(str(ds[i][label_col]))
     print(f"  Sample labels: {sample_labels}")
 
-    # Determine which labels are real vs fake
     real_labels = set()
     fake_labels = set()
     real_kw = ("real", "pexels", "authentic", "original", "genuine")
@@ -96,7 +80,6 @@ def main():
         elif any(k in ll for k in fake_kw):
             fake_labels.add(lbl)
 
-    # If no matches, try numeric: 0=real, 1=fake
     if not real_labels and not fake_labels:
         if "0" in sample_labels:
             real_labels.add("0")
@@ -141,7 +124,6 @@ def main():
 
 
 def _extract_video_bytes(video_val) -> bytes:
-    """Extract raw bytes from a HuggingFace video column value."""
     if isinstance(video_val, bytes):
         return video_val
 
@@ -163,7 +145,6 @@ def _extract_video_bytes(video_val) -> bytes:
 
 
 def _download_video_std_manip(real_dir: Path, fake_dir: Path, max_per: int):
-    """Fallback: download from ductai199x/video-std-manip."""
     from datasets import load_dataset
     from tqdm import tqdm
 

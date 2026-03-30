@@ -1,16 +1,3 @@
-"""
-Download deepfake/real datasets from HuggingFace.
-
-Sources:
-  - Hemg/deepfake-and-real-images            (~190k pairs, 0=Fake 1=Real)
-  - itsLeen/deepfake_vs_real_image_detection  (~7.4k, ClassLabel Fake/Real)
-  - date3k2/raw_real_fake_images              (~9.3k, ClassLabel Fake/Real)
-
-Usage:
-  python download_data.py
-  python download_data.py --max-per-source 5000
-"""
-
 import argparse
 import hashlib
 from pathlib import Path
@@ -19,7 +6,7 @@ from datasets import load_dataset
 from PIL import Image, ImageFile
 from tqdm import tqdm
 
-Image.MAX_IMAGE_PIXELS = None  # allow large images
+Image.MAX_IMAGE_PIXELS = None
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 SOURCES = [
@@ -36,7 +23,7 @@ SOURCES = [
         "split": "train",
         "image_col": "image",
         "label_col": "label",
-        "fake_values": None,  # auto-detect from ClassLabel
+        "fake_values": None,
         "real_values": None,
     },
     {
@@ -66,7 +53,6 @@ def download_source(cfg: dict, real_dir: Path, fake_dir: Path, max_per: int):
     fake_vals = list(cfg["fake_values"]) if cfg["fake_values"] else []
     real_vals = list(cfg["real_values"]) if cfg["real_values"] else []
 
-    # Auto-detect ClassLabel names
     label_col = cfg["label_col"]
     if label_col in ds.features:
         feat = ds.features[label_col]
@@ -116,8 +102,7 @@ def download_source(cfg: dict, real_dir: Path, fake_dir: Path, max_per: int):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--data-dir", default="data/image/train")
-    parser.add_argument("--max-per-source", type=int, default=8000,
-                        help="Max images per class per source (default 8000 → ~20-25k total)")
+    parser.add_argument("--max-per-source", type=int, default=8000)
     args = parser.parse_args()
 
     real_dir = Path(args.data_dir) / "real"

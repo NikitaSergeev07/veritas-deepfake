@@ -1,14 +1,3 @@
-"""
-Train MLP head on pre-extracted CLIP features.
-
-Loads cached .pt files from data/features/, trains for up to 50 epochs
-with early stopping on val AUC-ROC, then calibrates the decision threshold.
-
-Usage:
-  python -m ai.image_detector.train
-  python -m ai.image_detector.train --epochs 50 --lr 1e-3
-"""
-
 import argparse
 import os
 from pathlib import Path
@@ -25,8 +14,8 @@ try:
     from .dataset import CachedFeatureDataset
     from .model import MLPHead
 except ImportError:
-    from dataset import CachedFeatureDataset  # type: ignore[no-redef]
-    from model import MLPHead  # type: ignore[no-redef]
+    from dataset import CachedFeatureDataset
+    from model import MLPHead
 
 os.environ.setdefault("PYTORCH_ENABLE_MPS_FALLBACK", "1")
 
@@ -74,8 +63,7 @@ def main():
     parser.add_argument("--lr",          type=float, default=1e-3)
     parser.add_argument("--batch-size",  type=int,   default=256)
     parser.add_argument("--weight-decay",type=float, default=0.01)
-    parser.add_argument("--patience",    type=int,   default=10,
-                        help="Early stopping patience (val AUC epochs)")
+    parser.add_argument("--patience",    type=int,   default=10)
     args = parser.parse_args()
 
     device   = get_device()
@@ -89,7 +77,6 @@ def main():
     feature_dim = train_feats.shape[1]
     print(f"Feature dim: {feature_dim}")
 
-    # Class balance weight
     n_fake = int((train_lbls == 1).sum())
     n_real = int((train_lbls == 0).sum())
     pos_weight = torch.tensor([n_real / max(n_fake, 1)], device=device)
@@ -113,7 +100,6 @@ def main():
     print(f"\nTraining MLP head for up to {args.epochs} epochs (patience={args.patience}) ...\n")
 
     for epoch in range(1, args.epochs + 1):
-        # ── Train ──────────────────────────────────────────────────────────────
         model.train()
         total_loss = 0.0
         for feats, labels in train_loader:
@@ -126,7 +112,6 @@ def main():
         scheduler.step()
         avg_loss = total_loss / len(train_ds)
 
-        # ── Val ────────────────────────────────────────────────────────────────
         model.eval()
         all_probs, all_lbls = [], []
         with torch.no_grad():
@@ -153,7 +138,6 @@ def main():
             print(f"\nEarly stopping at epoch {epoch} (no improvement for {args.patience} epochs)")
             break
 
-    # ── Threshold calibration ─────────────────────────────────────────────────
     print(f"\nBest val AUC: {best_auc:.4f}")
     model.load_state_dict(best_state)
     model.eval()
@@ -173,7 +157,6 @@ def main():
     print(f"  balanced_acc: {metrics['balanced_acc']:.4f}")
     print(f"  accuracy:     {metrics['accuracy']:.4f}")
 
-    # ── Save checkpoint ────────────────────────────────────────────────────────
     ckpt_path = ckpt_dir / "best_model.pth"
     torch.save({
         "state_dict":  best_state,

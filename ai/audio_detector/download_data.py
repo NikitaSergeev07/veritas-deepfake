@@ -1,16 +1,3 @@
-"""
-Download audio deepfake datasets from HuggingFace.
-
-Sources:
-  - garystafford/deepfake-audio-detection  (the original training dataset,
-    ElevenLabs/Kokoro/Polly/Hume fake voices vs real YouTube clips)
-    label: "fake" / "real" string column
-
-Usage:
-  python -m ai.audio_detector.download_data
-  python -m ai.audio_detector.download_data --max-per-source 500
-"""
-
 import argparse
 import io
 from pathlib import Path
@@ -28,7 +15,6 @@ SOURCES = [
 
 
 def audio_to_bytes(audio_val) -> tuple[bytes, str]:
-    """Convert HuggingFace audio value to (bytes, extension)."""
     if isinstance(audio_val, bytes):
         return audio_val, ".flac"
 
@@ -39,19 +25,16 @@ def audio_to_bytes(audio_val) -> tuple[bytes, str]:
         return b"", ".flac"
 
     if isinstance(audio_val, dict):
-        # Try raw bytes first
         raw = audio_val.get("bytes")
         if raw:
             path = audio_val.get("path", "")
             ext = Path(path).suffix if path else ".flac"
             return raw, ext or ".flac"
 
-        # Try path
         path = audio_val.get("path", "")
         if path and Path(path).exists():
             return Path(path).read_bytes(), Path(path).suffix or ".flac"
 
-        # Convert numpy array → WAV bytes
         arr = audio_val.get("array")
         if arr is not None:
             try:
@@ -96,11 +79,9 @@ def download_source(cfg: dict, real_dir: Path, fake_dir: Path, max_per: int) -> 
     print(f"\nLoading {name} ...")
     try:
         ds = load_dataset(name, streaming=False)
-        # Merge all splits into one iterable
         from datasets import concatenate_datasets
         splits = list(ds.values())
         ds_all = concatenate_datasets(splits)
-        # Disable audio decoding — we want raw bytes
         import datasets as hf_datasets
         ds_all = ds_all.cast_column(cfg["audio_col"], hf_datasets.Audio(decode=False))
     except Exception as e:
@@ -123,7 +104,6 @@ def download_source(cfg: dict, real_dir: Path, fake_dir: Path, max_per: int) -> 
         if not raw:
             continue
 
-        # Use original filename if available, else generate one
         orig_path = audio_val.get("path", "") if isinstance(audio_val, dict) else ""
         if orig_path:
             stem = Path(orig_path).stem
@@ -153,8 +133,7 @@ def download_source(cfg: dict, real_dir: Path, fake_dir: Path, max_per: int) -> 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--data-dir",        default="data/audio")
-    parser.add_argument("--max-per-source",  type=int, default=500,
-                        help="Max clips per class per source (default 500)")
+    parser.add_argument("--max-per-source",  type=int, default=500)
     args = parser.parse_args()
 
     real_dir = Path(args.data_dir) / "real"

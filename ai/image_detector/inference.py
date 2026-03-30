@@ -1,10 +1,3 @@
-"""
-Single-image inference: MediaPipe face detection → CLIP → MLP → verdict.
-
-Run as module from project root:
-  python -m ai.image_detector.inference <image_path> <checkpoint_path>
-"""
-
 import os
 from pathlib import Path
 
@@ -18,8 +11,8 @@ try:
     from .model import MLPHead
     from .dataset import get_val_transform
 except ImportError:
-    from model import MLPHead  # type: ignore[no-redef]
-    from dataset import get_val_transform  # type: ignore[no-redef]
+    from model import MLPHead
+    from dataset import get_val_transform
 
 
 def get_device():
@@ -29,18 +22,15 @@ def get_device():
 
 
 def load_model(ckpt_path: str, device: torch.device):
-    """Load checkpoint and return (clip_visual, mlp_head, threshold)."""
     ckpt = torch.load(ckpt_path, map_location="cpu", weights_only=False)
     feature_dim = ckpt.get("feature_dim", 512)
     threshold   = ckpt.get("threshold", 0.5)
     clip_name   = ckpt.get("clip_model", "ViT-B-16")
 
-    # Load CLIP visual encoder
     clip_model, _, _ = open_clip.create_model_and_transforms(clip_name, pretrained="openai")
     clip_visual = clip_model.visual.eval().to(device)
     clip_visual.requires_grad_(False)
 
-    # Load MLP head
     mlp = MLPHead(feature_dim=feature_dim)
     mlp.load_state_dict(ckpt["state_dict"])
     mlp = mlp.eval().to(device)
@@ -52,7 +42,6 @@ def load_model(ckpt_path: str, device: torch.device):
 
 
 def detect_face(image: Image.Image, margin: float = 0.30):
-    """Try MediaPipe face detection. Returns cropped face PIL image or None."""
     try:
         import mediapipe as mp
         import numpy as np
@@ -82,10 +71,6 @@ def detect_face(image: Image.Image, margin: float = 0.30):
 
 @torch.no_grad()
 def predict(image: Image.Image, clip_visual, mlp, threshold: float, device: torch.device):
-    """
-    Returns dict:
-      {verdict, confidence, face_detected, face_crop}
-    """
     transform = get_val_transform()
 
     face_crop = detect_face(image)
