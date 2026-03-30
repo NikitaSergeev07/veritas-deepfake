@@ -27,8 +27,9 @@ dist/
 data/
 test_videos/
 
-# Docs (presentation text, not for repo)
+# Docs & presentation
 docs/
+*.pptx
 
 # Logs
 *.log
