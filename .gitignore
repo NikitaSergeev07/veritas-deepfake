@@ -24,14 +24,11 @@ dist/
 .env.local
 
 # Data (large files, download separately)
-data/audio/real/
-data/audio/fake/
-data/video/real/
-data/video/fake/
-data/image/train/
-data/image/val/
-data/image/features/
+data/
 test_videos/
+
+# Docs (presentation text, not for repo)
+docs/
 
 # Logs
 *.log
